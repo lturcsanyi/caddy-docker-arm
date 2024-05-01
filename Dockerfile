@@ -1,14 +1,16 @@
 #
 # Builder
 #
-FROM abiosoft/caddy:builder as builder
+FROM caddy-builder:arm-builder as builder
 
 ARG version="1.0.3"
 ARG plugins="git,cors,realip,expires,cache,cloudflare"
-ARG enable_telemetry="true"
+ARG enable_telemetry="false"
 
 # process wrapper
+RUN go env -w GO111MODULE=off
 RUN go get -v github.com/abiosoft/parent
+RUN go env -w GO111MODULE=on
 
 RUN VERSION=${version} PLUGINS=${plugins} ENABLE_TELEMETRY=${enable_telemetry} /bin/sh /usr/bin/builder.sh
 

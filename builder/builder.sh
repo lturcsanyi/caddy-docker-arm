@@ -17,6 +17,7 @@ stage() {
     STAGE="$1"
     echo
     echo starting stage: $STAGE
+    echo import: $IMPORT
 }
 
 end_stage() {
@@ -42,7 +43,7 @@ get_package() {
         cp -r /dnsproviders/$1/$1.go /caddy/dnsproviders/$1/$1.go
         echo "caddy/dnsproviders/$1"
     else
-        GO111MODULE=off GOOS=linux GOARCH=amd64 caddyplug package $1 2> /dev/null
+        GO111MODULE=off GOOS=linux GOARCH=arm64 caddyplug package $1 2> /dev/null
     fi
 }
 
@@ -64,6 +65,7 @@ plugins() {
 }
 
 module() {
+    echo "module"
     mkdir -p /caddy
     cd /caddy # build dir
 
@@ -98,6 +100,7 @@ EOF
 }
 
 legacy() {
+    echo "legacy"
     cd /go/src/$IMPORT/caddy # build dir
 
     # plugins
@@ -131,7 +134,7 @@ end_stage
 
 # plugin helper
 stage "installing plugin helper"
-GOOS=linux GOARCH=amd64 go get -v github.com/abiosoft/caddyplug/caddyplug
+GOOS=linux GOARCH=arm64 go get -v github.com/abiosoft/caddyplug/caddyplug
 end_stage
 
 # check for modules support
@@ -155,13 +158,19 @@ end_stage
 
 # build
 stage "building caddy"
-CGO_ENABLED=0 go build -o caddy
+go mod tidy
+cd /go/src/github.com/caddyserver/caddy/caddy
+go build
 end_stage
 
 # copy binary
 stage "copying binary"
+chmod u+x caddy
+./caddy -version
 mkdir -p /install \
+    && chmod u+w /install \
     && mv caddy /install \
+    && chmod u+x /install/caddy \
     && /install/caddy -version
 end_stage
 

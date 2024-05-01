@@ -168,3 +168,10 @@ $ docker run -d \
     -p 80:80 -p 443:443 \
     abiosoft/caddy
 ```
+## Build
+
+```shell
+docker build ./builder --tag caddy-builder:arm-builder
+docker build . --tag caddy:arm
+```
+
